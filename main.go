@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/makotia/instasave/models"
@@ -24,6 +25,7 @@ func main() {
 		sessionID string
 		dlDir     string
 	)
+	loc, _ := time.LoadLocation("Asia/Tokyo")
 
 	if _, err = toml.DecodeFile("config.toml", &config); err != nil {
 		fmt.Println(err)
@@ -89,7 +91,7 @@ func main() {
 					}
 				}
 				savePath := fmt.Sprintf("%s/%s", dlDir, story.User.UserName)
-				if path, err = utils.Download(dlurl, savePath, item.ID, ext); err != nil {
+				if path, err = utils.Download(dlurl, time.Unix(int64(item.TimeStamp), 0).In(loc), savePath, item.ID, ext); err != nil {
 					fmt.Println(err)
 				}
 				fmt.Println(path)

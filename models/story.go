@@ -12,7 +12,7 @@ type Story struct {
 // Item item
 type Item struct {
 	ID            string     `json:"id"`
-	TimeStamp     int        `json:"device_timestamp"`
+	TimeStamp     int        `json:"taken_at"`
 	MediaType     int        `json:"media_type"`
 	VideoVersions []Video    `json:"video_versions"`
 	ImageVersions Candidates `json:"image_versions2"`

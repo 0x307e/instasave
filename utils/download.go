@@ -5,10 +5,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 // Download URL を渡してダウンロードする
-func Download(url string, savePath string, filename string, ext string) (path string, err error) {
+func Download(url string, time time.Time, savePath string, filename string, ext string) (path string, err error) {
 	var (
 		res  *http.Response
 		file *os.File
@@ -26,5 +27,8 @@ func Download(url string, savePath string, filename string, ext string) (path st
 	}
 	defer file.Close()
 	io.Copy(file, res.Body)
+	if err = os.Chtimes(path, time, time); err != nil {
+		return "", err
+	}
 	return path, nil
 }
