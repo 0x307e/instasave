@@ -2,13 +2,14 @@ package models
 
 // Config 全ての設定を格納
 type Config struct {
-	InstagramDefaultSetting InstagramDefaultSetting `toml:"InstagramDefaultSetting"`
-	InstagramSetting        []InstagramSetting      `toml:"InstagramSetting"`
+	DefaultSetting   DefaultSetting     `toml:"DefaultSetting"`
+	InstagramSetting []InstagramSetting `toml:"InstagramSetting"`
 }
 
-// InstagramDefaultSetting インスタの SessionID など
-type InstagramDefaultSetting struct {
-	SessionID string `toml:"SessionID"`
+// DefaultSetting デフォルト設定
+type DefaultSetting struct {
+	SessionID   string `toml:"SessionID"`
+	DownloadDir string `toml:"DownloadDir"`
 }
 
 // InstagramSetting インスタの SessionID など

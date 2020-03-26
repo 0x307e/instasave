@@ -1,5 +1,6 @@
 [InstagramDefaultSetting]
 SessionID = ""
+DownloadDir = ""
 
 [[InstagramSetting]]
 UserID = 1

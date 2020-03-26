@@ -5,15 +5,23 @@ import "encoding/json"
 // Story reel_media で返ってくるモデル
 type Story struct {
 	Items  []Item `json:"items"`
+	User   User   `json:"user"`
 	Status string `json:"status"`
 }
 
 // Item item
 type Item struct {
+	ID            string     `json:"id"`
 	TimeStamp     int        `json:"device_timestamp"`
 	MediaType     int        `json:"media_type"`
 	VideoVersions []Video    `json:"video_versions"`
 	ImageVersions Candidates `json:"image_versions2"`
+}
+
+// User user
+type User struct {
+	UserName string `json:"username"`
+	FullName string `json:"full_name"`
 }
 
 // Video video
