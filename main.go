@@ -15,7 +15,11 @@ func main() {
 	var (
 		url       string
 		err       error
+		req       *http.Request
+		byteArray []byte
 		resp      *http.Response
+		story     models.Story
+		feedList  models.FeedList
 		config    models.Config
 		sessionID string
 	)
@@ -35,8 +39,9 @@ func main() {
 			sessionID = config.InstagramSetting[i].SessionID
 		}
 
+		// Story
 		url = fmt.Sprintf("https://i.instagram.com/api/v1/feed/user/%d/reel_media/", config.InstagramSetting[i].UserID)
-		req, _ := http.NewRequest("GET", url, nil)
+		req, _ = http.NewRequest("GET", url, nil)
 		req.Header.Set("Cookie", fmt.Sprintf("sessionid=%s", sessionID))
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SM-G935T Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36 Instagram 8.4.0 Android (23/6.0.1; 560dpi; 1440x2560; samsung; SM-G935T; hero2qltetmo; qcom; en_US")
 
@@ -46,14 +51,14 @@ func main() {
 		}
 		defer resp.Body.Close()
 
-		byteArray, _ := ioutil.ReadAll(resp.Body)
-		res, _ := models.UnmarshalStory(byteArray)
-		if res.Status == "ok" {
-			for _, item := range res.Items {
+		byteArray, _ = ioutil.ReadAll(resp.Body)
+		story, _ = models.UnmarshalStory(byteArray)
+		if story.Status == "ok" {
+			for _, item := range story.Items {
 				var (
 					height = 0
 					width  = 0
-					url    = ""
+					dlurl  = ""
 					ext    = ""
 					dlDir  = ""
 					path   = ""
@@ -63,7 +68,7 @@ func main() {
 					ext = "mp4"
 					for _, v := range item.VideoVersions {
 						if height < v.Height && width < v.Width {
-							url = v.URL
+							dlurl = v.URL
 							height = v.Height
 							width = v.Width
 						}
@@ -72,7 +77,7 @@ func main() {
 					ext = "jpg"
 					for _, image := range item.ImageVersions.Images {
 						if height < image.Height && width < image.Width {
-							url = image.URL
+							dlurl = image.URL
 							height = image.Height
 							width = image.Width
 						}
@@ -83,12 +88,29 @@ func main() {
 				} else {
 					dlDir = "./dl"
 				}
-				savePath := fmt.Sprintf("%s/%s", dlDir, res.User.UserName)
-				if path, err = utils.Download(url, savePath, item.ID, ext); err != nil {
+				savePath := fmt.Sprintf("%s/%s", dlDir, story.User.UserName)
+				if path, err = utils.Download(dlurl, savePath, item.ID, ext); err != nil {
 					fmt.Println(err)
 				}
 				fmt.Println(path)
 			}
+		}
+		// Feed
+		url = fmt.Sprintf("https://instagram.com/%s/?__a=1", story.User.UserName)
+		req, _ = http.NewRequest("GET", url, nil)
+		req.Header.Set("Cookie", fmt.Sprintf("sessionid=%s", sessionID))
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SM-G935T Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36 Instagram 8.4.0 Android (23/6.0.1; 560dpi; 1440x2560; samsung; SM-G935T; hero2qltetmo; qcom; en_US")
+
+		if resp, err = client.Do(req); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer resp.Body.Close()
+
+		byteArray, _ = ioutil.ReadAll(resp.Body)
+		feedList, _ = models.UnmarshalFeedList(byteArray)
+		for _, edge := range feedList.GraphQL.User.EdgeOwnerToTimelineMedia.Edges {
+			fmt.Println(fmt.Sprintf("https://instagram.com/%s/p/%s/?__a=1", feedList.GraphQL.User.UserName, edge.Node.ShortCode))
 		}
 	}
 }

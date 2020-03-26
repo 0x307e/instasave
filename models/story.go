@@ -4,9 +4,9 @@ import "encoding/json"
 
 // Story reel_media で返ってくるモデル
 type Story struct {
-	Items  []Item `json:"items"`
-	User   User   `json:"user"`
-	Status string `json:"status"`
+	Items  []Item    `json:"items"`
+	User   StoryUser `json:"user"`
+	Status string    `json:"status"`
 }
 
 // Item item
@@ -18,8 +18,8 @@ type Item struct {
 	ImageVersions Candidates `json:"image_versions2"`
 }
 
-// User user
-type User struct {
+// StoryUser user
+type StoryUser struct {
 	UserName string `json:"username"`
 	FullName string `json:"full_name"`
 }
