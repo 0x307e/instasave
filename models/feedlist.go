@@ -4,11 +4,11 @@ import "encoding/json"
 
 // FeedList ユーザーページに ?__a=1 したときのレスポンス
 type FeedList struct {
-	GraphQL GraphQL `json:"graphql"`
+	GraphQL FeedListGraphQL `json:"graphql"`
 }
 
-// GraphQL GraphQL
-type GraphQL struct {
+// FeedListGraphQL GraphQL
+type FeedListGraphQL struct {
 	User FeedListUser `json:"user"`
 }
 
@@ -20,16 +20,16 @@ type FeedListUser struct {
 
 // EdgeOwnerToTimelineMedia EdgeOwnerToTimelineMedia
 type EdgeOwnerToTimelineMedia struct {
-	Edges []Edge `json:"edges"`
+	Edges []FeedListEdge `json:"edges"`
 }
 
-// Edge edge
-type Edge struct {
-	Node Node `json:"node"`
+// FeedListEdge edge
+type FeedListEdge struct {
+	Node FeedListNode `json:"node"`
 }
 
-// Node node
-type Node struct {
+// FeedListNode node
+type FeedListNode struct {
 	ShortCode string `json:"shortcode"`
 }
 

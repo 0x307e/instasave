@@ -21,6 +21,7 @@ func main() {
 		resp      *http.Response
 		story     models.Story
 		feedList  models.FeedList
+		feed      models.Feed
 		config    models.Config
 		sessionID string
 		dlDir     string
@@ -112,7 +113,50 @@ func main() {
 		byteArray, _ = ioutil.ReadAll(resp.Body)
 		feedList, _ = models.UnmarshalFeedList(byteArray)
 		for _, edge := range feedList.GraphQL.User.EdgeOwnerToTimelineMedia.Edges {
-			fmt.Println(fmt.Sprintf("https://instagram.com/%s/p/%s/?__a=1", feedList.GraphQL.User.UserName, edge.Node.ShortCode))
+			var (
+				height = 0
+				width  = 0
+				dlurl  = ""
+				ext    = ""
+				path   = ""
+			)
+			url = fmt.Sprintf("https://instagram.com/%s/p/%s/?__a=1", feedList.GraphQL.User.UserName, edge.Node.ShortCode)
+			req, _ = http.NewRequest("GET", url, nil)
+			req.Header.Set("Cookie", fmt.Sprintf("sessionid=%s", sessionID))
+			req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SM-G935T Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36 Instagram 8.4.0 Android (23/6.0.1; 560dpi; 1440x2560; samsung; SM-G935T; hero2qltetmo; qcom; en_US")
+
+			if resp, err = client.Do(req); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			defer resp.Body.Close()
+
+			byteArray, _ = ioutil.ReadAll(resp.Body)
+			if feed, err = models.UnmarshalFeed(byteArray); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			// fmt.Printf("%#v", feed)
+			for _, media := range feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges {
+				if media.Node.IsVideo {
+					dlurl = media.Node.VideoURL
+					ext = "mp4"
+				} else {
+					ext = "jpg"
+					for _, img := range media.Node.DisplayResources {
+						if height < img.Height && width < img.Width {
+							dlurl = img.URL
+							height = img.Height
+							width = img.Width
+						}
+					}
+				}
+				savePath := fmt.Sprintf("%s/%s", dlDir, feed.GraphQL.ShortCodeMedia.Owner.UserName)
+				if path, err = utils.Download(dlurl, time.Unix(int64(feed.GraphQL.ShortCodeMedia.TimeStamp), 0).In(loc), savePath, media.Node.ID, ext); err != nil {
+					fmt.Println(err)
+				}
+				fmt.Println(path)
+			}
 		}
 	}
 }
