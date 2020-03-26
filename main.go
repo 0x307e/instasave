@@ -22,6 +22,7 @@ func main() {
 		feedList  models.FeedList
 		config    models.Config
 		sessionID string
+		dlDir     string
 	)
 
 	if _, err = toml.DecodeFile("config.toml", &config); err != nil {
@@ -31,10 +32,15 @@ func main() {
 
 	sessionID = config.DefaultSetting.SessionID
 
+	if config.DefaultSetting.DownloadDir != "" {
+		dlDir = config.DefaultSetting.DownloadDir
+	} else {
+		dlDir = "./dl"
+	}
+
 	client := new(http.Client)
 
 	for i := 0; i < len(config.InstagramSetting); i++ {
-		fmt.Printf("%#v\n", config.InstagramSetting[i])
 		if config.InstagramSetting[i].SessionID != "" {
 			sessionID = config.InstagramSetting[i].SessionID
 		}
@@ -60,7 +66,6 @@ func main() {
 					width  = 0
 					dlurl  = ""
 					ext    = ""
-					dlDir  = ""
 					path   = ""
 				)
 
@@ -82,11 +87,6 @@ func main() {
 							width = image.Width
 						}
 					}
-				}
-				if config.DefaultSetting.DownloadDir != "" {
-					dlDir = config.DefaultSetting.DownloadDir
-				} else {
-					dlDir = "./dl"
 				}
 				savePath := fmt.Sprintf("%s/%s", dlDir, story.User.UserName)
 				if path, err = utils.Download(dlurl, savePath, item.ID, ext); err != nil {
