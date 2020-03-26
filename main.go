@@ -119,6 +119,7 @@ func main() {
 				dlurl  = ""
 				ext    = ""
 				path   = ""
+				id     = ""
 			)
 			url = fmt.Sprintf("https://instagram.com/%s/p/%s/?__a=1", feedList.GraphQL.User.UserName, edge.Node.ShortCode)
 			req, _ = http.NewRequest("GET", url, nil)
@@ -136,27 +137,44 @@ func main() {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			// fmt.Printf("%#v", feed)
-			for _, media := range feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges {
-				if media.Node.IsVideo {
-					dlurl = media.Node.VideoURL
-					ext = "mp4"
-				} else {
-					ext = "jpg"
-					for _, img := range media.Node.DisplayResources {
-						if height < img.Height && width < img.Width {
-							dlurl = img.URL
-							height = img.Height
-							width = img.Width
+			if len(feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges) != 0 {
+				for _, media := range feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges {
+					id = media.Node.ID
+					if media.Node.IsVideo {
+						dlurl = media.Node.VideoURL
+						ext = "mp4"
+					} else {
+						ext = "jpg"
+						for _, img := range media.Node.DisplayResources {
+							if height < img.Height && width < img.Width {
+								dlurl = img.URL
+								height = img.Height
+								width = img.Width
+							}
 						}
 					}
 				}
-				savePath := fmt.Sprintf("%s/%s", dlDir, feed.GraphQL.ShortCodeMedia.Owner.UserName)
-				if path, err = utils.Download(dlurl, time.Unix(int64(feed.GraphQL.ShortCodeMedia.TimeStamp), 0).In(loc), savePath, media.Node.ID, ext); err != nil {
-					fmt.Println(err)
+			} else {
+				for _, media := range feed.GraphQL.ShortCodeMedia.DisplayResources {
+					id = feed.GraphQL.ShortCodeMedia.ID
+					if feed.GraphQL.ShortCodeMedia.IsVideo {
+						dlurl = feed.GraphQL.ShortCodeMedia.VideoURL
+						ext = "mp4"
+					} else {
+						ext = "jpg"
+						if height < media.Height && width < media.Width {
+							dlurl = media.URL
+							height = media.Height
+							width = media.Width
+						}
+					}
 				}
-				fmt.Println(path)
 			}
+			savePath := fmt.Sprintf("%s/%s", dlDir, feed.GraphQL.ShortCodeMedia.Owner.UserName)
+			if path, err = utils.Download(dlurl, time.Unix(int64(feed.GraphQL.ShortCodeMedia.TimeStamp), 0).In(loc), savePath, id, ext); err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println(path)
 		}
 	}
 }

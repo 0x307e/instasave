@@ -17,7 +17,9 @@ type ShortCodeMedia struct {
 	ID                    string                `json:"id"`
 	ShortCode             string                `json:"shortcode"`
 	Dimensions            Dimensions            `json:"dimensions"`
+	DisplayResources      []FeedImage           `json:"display_resources"`
 	IsVideo               bool                  `json:"is_video"`
+	VideoURL              string                `json:"video_url"`
 	EdgeMediaToCaption    EdgeMediaToCaption    `json:"edge_media_to_caption"`
 	TimeStamp             int                   `json:"taken_at_timestamp"`
 	Owner                 StoryUser             `json:"owner"`
