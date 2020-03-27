@@ -2,3 +2,4 @@ config.toml
 .DS_Store
 db/
 dl/
+instasave
