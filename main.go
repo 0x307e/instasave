@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -26,11 +27,11 @@ func main() {
 		sessionID string
 		dlDir     string
 	)
+	log.SetFlags(log.Lshortfile)
 	loc, _ := time.LoadLocation("Asia/Tokyo")
 
 	if _, err = toml.DecodeFile("config.toml", &config); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	sessionID = config.DefaultSetting.SessionID
@@ -55,8 +56,7 @@ func main() {
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SM-G935T Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36 Instagram 8.4.0 Android (23/6.0.1; 560dpi; 1440x2560; samsung; SM-G935T; hero2qltetmo; qcom; en_US")
 
 		if resp, err = client.Do(req); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		defer resp.Body.Close()
 
@@ -93,9 +93,8 @@ func main() {
 				}
 				savePath := fmt.Sprintf("%s/%s", dlDir, story.User.UserName)
 				if path, err = utils.Download(dlurl, time.Unix(int64(item.TimeStamp), 0).In(loc), savePath, item.ID, ext); err != nil {
-					fmt.Println(err)
+					log.Fatal(err)
 				}
-				fmt.Println(path)
 			}
 		}
 		// Feed
@@ -105,8 +104,7 @@ func main() {
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SM-G935T Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36 Instagram 8.4.0 Android (23/6.0.1; 560dpi; 1440x2560; samsung; SM-G935T; hero2qltetmo; qcom; en_US")
 
 		if resp, err = client.Do(req); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		defer resp.Body.Close()
 
@@ -127,15 +125,14 @@ func main() {
 			req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 6.0.1; SM-G935T Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/51.0.2704.81 Mobile Safari/537.36 Instagram 8.4.0 Android (23/6.0.1; 560dpi; 1440x2560; samsung; SM-G935T; hero2qltetmo; qcom; en_US")
 
 			if resp, err = client.Do(req); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				log.Fatal(err)
 			}
 			defer resp.Body.Close()
 
 			byteArray, _ = ioutil.ReadAll(resp.Body)
 			if feed, err = models.UnmarshalFeed(byteArray); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				log.Fatal(err)
+			}
 			}
 			if len(feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges) != 0 {
 				for _, media := range feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges {
@@ -173,6 +170,7 @@ func main() {
 			savePath := fmt.Sprintf("%s/%s", dlDir, feed.GraphQL.ShortCodeMedia.Owner.UserName)
 			if path, err = utils.Download(dlurl, time.Unix(int64(feed.GraphQL.ShortCodeMedia.TimeStamp), 0).In(loc), savePath, id, ext); err != nil {
 				fmt.Println(err)
+				log.Fatal(err)
 			}
 			fmt.Println(path)
 		}
