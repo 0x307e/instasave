@@ -31,6 +31,7 @@ type FeedListEdge struct {
 // FeedListNode node
 type FeedListNode struct {
 	ShortCode string `json:"shortcode"`
+	TimeStamp int    `json:"taken_at_timestamp"`
 }
 
 // UnmarshalFeedList FeedList のレスポンスを struct に
