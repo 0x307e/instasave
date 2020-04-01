@@ -180,9 +180,11 @@ func main() {
 			if lastFeed < feed.GraphQL.ShortCodeMedia.TimeStamp || lastFeed < feedTime {
 				lastFeed = feed.GraphQL.ShortCodeMedia.TimeStamp
 			}
+			savePath := fmt.Sprintf("%s/%s", dlDir, feed.GraphQL.ShortCodeMedia.Owner.UserName)
 			if len(feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges) != 0 {
 				for _, media := range feed.GraphQL.ShortCodeMedia.EdgeSidecarToChildren.Edges {
 					id = media.Node.ID
+					dlurl, height, width = "", 0, 0
 					if media.Node.IsVideo {
 						dlurl = media.Node.VideoURL
 						ext = "mp4"
@@ -196,6 +198,11 @@ func main() {
 							}
 						}
 					}
+					fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (PostID: %s)", "Save", "Start Download", edge.Node.ShortCode))
+					if _, err = utils.Download(dlurl, time.Unix(int64(feed.GraphQL.ShortCodeMedia.TimeStamp), 0).In(loc), savePath, id, ext); err != nil {
+						log.Fatal(err)
+					}
+					fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (PostID: %s)", "Save", "Download Complete", edge.Node.ShortCode))
 				}
 			} else {
 				for _, media := range feed.GraphQL.ShortCodeMedia.DisplayResources {
@@ -211,14 +218,13 @@ func main() {
 							width = media.Width
 						}
 					}
+					fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (PostID: %s)", "Save", "Start Download", edge.Node.ShortCode))
+					if _, err = utils.Download(dlurl, time.Unix(int64(feed.GraphQL.ShortCodeMedia.TimeStamp), 0).In(loc), savePath, id, ext); err != nil {
+						log.Fatal(err)
+					}
+					fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (PostID: %s)", "Save", "Download Complete", edge.Node.ShortCode))
 				}
 			}
-			savePath := fmt.Sprintf("%s/%s", dlDir, feed.GraphQL.ShortCodeMedia.Owner.UserName)
-			fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (PostID: %s)", "Save", "Start Download", edge.Node.ShortCode))
-			if _, err = utils.Download(dlurl, time.Unix(int64(feed.GraphQL.ShortCodeMedia.TimeStamp), 0).In(loc), savePath, id, ext); err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (PostID: %s)", "Save", "Download Complete", edge.Node.ShortCode))
 		}
 		if err = db.Put([]byte(fmt.Sprintf("%s:feed", story.User.UserName)), []byte(strconv.Itoa(lastFeed)), nil); err != nil {
 			log.Fatal(err)
