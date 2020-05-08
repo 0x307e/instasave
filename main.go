@@ -116,9 +116,11 @@ func main() {
 					}
 				}
 				savePath := fmt.Sprintf("%s/%s", dlDir, story.User.UserName)
+				fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (ItemID: %s)", "Save", "Start Download", item.ID))
 				if _, err = utils.Download(dlurl, time.Unix(int64(item.TimeStamp), 0).In(loc), savePath, item.ID, ext); err != nil {
 					log.Fatal(err)
 				}
+				fmt.Println(fmt.Sprintf("\x1b[34m[%s]\x1b[0m %s (ItemID: %s)", "Save", "Download Complete", item.ID))
 			}
 			if err = db.Put([]byte(fmt.Sprintf("%s:story", story.User.UserName)), []byte(strconv.Itoa(storyTime)), nil); err != nil {
 				if err != leveldb.ErrNotFound {
